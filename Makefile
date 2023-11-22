@@ -3,15 +3,13 @@ PROJECT := gitlab
 NAME := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 DOCKER_IMAGE := "gerbil/alpine"
 
-$(info "name is " $(NAME))
-$(eval uid := $(shell id -u))
-$(eval gid := $(shell id -g))
+uid := $(shell id -u)
+gid := $(shell id -g)
 
 default: linux-static-docker
 
 deps:
 	/usr/bin/time -avp $(GERBIL_HOME)/bin/gxpkg install github.com/ober/oberlib
-	/usr/bin/time -avp $(GERBIL_HOME)/bin/gxpkg install github.com/yanndegat/colorstring
 
 build: deps
 	$(GERBIL_HOME)/bin/gxpkg link $(PROJECT) /src || true
