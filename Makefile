@@ -16,10 +16,10 @@ build: deps
 	$(GERBIL_HOME)/bin/gxpkg build $(PROJECT)
 
 linux-static-docker:
-	docker run -it \
+	docker run -t \
 	-e GERBIL_PATH=/src/.gerbil \
-	-u "$(uid):$(gid)" \
-    -v $(PWD):/src:z \
+        -u "$(uid):$(gid)" \
+        -v $(PWD):/src:z \
 	$(DOCKER_IMAGE) \
 	make -C /src linux-static
 
