@@ -1,8 +1,8 @@
 PROJECT := gitlab
 
 NAME := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-DOCKER_IMAGE := "gerbil/alpine"
-
+ARCH := $(shell uname -m)
+DOCKER_IMAGE := "gerbil/gerbilxx:$(ARCH)-master"
 uid := $(shell id -u)
 gid := $(shell id -g)
 
