@@ -1,9 +1,11 @@
 PROJECT := gitlab
-
 NAME := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 ARCH := $(shell uname -m)
 DOCKER_IMAGE := "gerbil/gerbilxx:$(ARCH)-master"
 PWD := $(shell pwd)
+UID := $(shell id -u)
+GID := $(shell id -g)
+
 
 default: linux-static-docker
 
@@ -17,8 +19,7 @@ build: deps
 linux-static-docker:
 	docker run -t \
 	-e GERBIL_PATH=/src/.gerbil \
-	-e UID=$(id -u) \
-	-e GID=$(id -g) \
+	-u "$(UID):$(GID)" \
 	-v $(PWD):/src:z \
 	$(DOCKER_IMAGE) \
 	make -C /src linux-static
@@ -30,7 +31,7 @@ linux-static: build
 	-exe $(PROJECT)/$(PROJECT).ss
 
 clean:
-	rm -Rf $(PROJECT)-bin
+	rm -rf $(PROJECT)-bin .gerbil manifest.ss
 
 install:
 	mv $(PROJECT)-bin /usr/local/bin/$(PROJECT)
