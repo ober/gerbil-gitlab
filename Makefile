@@ -1,37 +1,35 @@
 PROJECT := gitlab
-NAME := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 ARCH := $(shell uname -m)
-DOCKER_IMAGE := "gerbil/gerbilxx:$(ARCH)-master"
 PWD := $(shell pwd)
+GERBIL_HOME := /opt/gerbil
+DOCKER_IMAGE := "gerbil/gerbilxx:$(ARCH)-master"
 UID := $(shell id -u)
 GID := $(shell id -g)
 
-
 default: linux-static-docker
 
+check-root:
+	@if [ "${UID}" -eq 0 ]; then \
+	git config --global --add safe.directory /src; \
+	fi
+
 deps:
-	/usr/bin/time -avp $(GERBIL_HOME)/bin/gxpkg install github.com/ober/oberlib
+	$(GERBIL_HOME)/bin/gxpkg install github.com/mighty-gerbils/gerbil-libyaml
+	$(GERBIL_HOME)/bin/gxpkg install github.com/ober/oberlib
 
-build: deps
+build: deps check-root
 	$(GERBIL_HOME)/bin/gxpkg link $(PROJECT) /src || true
-	$(GERBIL_HOME)/bin/gxpkg build $(PROJECT)
+	$(GERBIL_HOME)/bin/gxpkg build -R $(PROJECT)
 
-linux-static-docker:
+linux-static-docker: clean
 	docker run -t \
-	-e GERBIL_PATH=/src/.gerbil \
 	-u "$(UID):$(GID)" \
 	-v $(PWD):/src:z \
 	$(DOCKER_IMAGE) \
-	make -C /src linux-static
-
-linux-static: build
-	/usr/bin/time -avp $(GERBIL_HOME)/bin/gxc -o $(PROJECT)-bin -static \
-	-cc-options "-Bstatic" \
-	-ld-options "-static -lpthread -L/usr/lib/x86_64-linux-gnu -lssl -ldl -lyaml -lz " \
-	-exe $(PROJECT)/$(PROJECT).ss
+	make -C /src build
 
 clean:
-	rm -rf $(PROJECT)-bin .gerbil manifest.ss
+	rm -rf .gerbil manifest.ss
 
 install:
-	mv $(PROJECT)-bin /usr/local/bin/$(PROJECT)
+	mv .gerbil/bin/$(PROJECT) /usr/local/bin/$(PROJECT)
